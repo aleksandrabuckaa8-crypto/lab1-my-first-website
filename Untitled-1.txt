@@ -1,0 +1,218 @@
+
+#include <SFML/Graphics.hpp>
+#include <iostream>
+
+using namespace sf;
+
+// Усунення можливої помилки з degrees() в різних версіях SFML
+float degrees(float angle) {
+    return angle;
+}
+
+int main()
+{
+    RenderWindow window(VideoMode({450 ,180 }), "Hello World - B O V");
+    
+    while (window.isOpen())
+    {
+        Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == Event::Closed)
+            {
+                window.close();
+            }
+        }
+        
+        window.clear(Color(250, 220, 100, 0));
+        
+        // --- Параметри літер ---
+        float baseY = 20.f;          
+        float letter_height = 130.f; 
+        float letter_width = 80.f;   
+        float thickness = 10.f;      
+        float gap_between = 20.f;    
+        
+        // --- B ---
+        float b_X = 20.f;
+        
+        // Стовбур
+        RectangleShape b_stem(Vector2f(thickness, letter_height));
+        b_stem.setPosition(b_X, baseY);
+        b_stem.setFillColor(Color::Blue);
+        window.draw(b_stem);
+
+        // Верхня горизонтальна лінія
+        RectangleShape b_top(Vector2f(letter_width - thickness, thickness));
+        b_top.setPosition(b_X + thickness, baseY);
+        b_top.setFillColor(Color::Blue);
+        window.draw(b_top);
+        
+        // Середня горизонтальна лінія
+        RectangleShape b_middle(Vector2f(letter_width - thickness, thickness));
+        b_middle.setPosition(b_X + thickness, baseY + letter_height / 2.0f - thickness / 2.0f); 
+        b_middle.setFillColor(Color::Blue);
+        window.draw(b_middle);
+        
+        // Нижня горизонтальна лінія
+        RectangleShape b_bottom(Vector2f(letter_width - thickness, thickness));
+        b_bottom.setPosition(b_X + thickness, baseY + letter_height - thickness);
+        b_bottom.setFillColor(Color::Blue);
+        window.draw(b_bottom);
+        
+        // Права вертикальна лінія
+        RectangleShape b_right(Vector2f(thickness, letter_height - thickness * 2));
+        b_right.setPosition(b_X + letter_width - thickness, baseY + thickness);
+        b_right.setFillColor(Color::Blue);
+        window.draw(b_right);
+        
+        
+        // --- O ---
+        float o_X = b_X + letter_width + gap_between; 
+        float radius = letter_height / 2.0f; 
+        
+        CircleShape o_outer(radius); 
+        o_outer.setPosition(o_X, baseY); 
+        o_outer.setFillColor(Color::Transparent);
+        o_outer.setOutlineColor(Color::Red);
+        o_outer.setOutlineThickness(thickness); 
+        o_outer.move(thickness / 2.0f, thickness / 2.0f); 
+        window.draw(o_outer);
+
+        
+        // --- V ---
+        float v_start_X = o_X + letter_height + gap_between; 
+        float v_center_X = v_start_X + letter_width / 2.0f;
+        float v_center_Y = baseY + letter_height;
+        float angle = 15.f; 
+        
+        // Ліва нога
+        RectangleShape v_left(Vector2f(thickness, letter_height));
+        v_left.setOrigin(thickness / 2.0f, letter_height); 
+        v_left.setPosition(v_center_X, v_center_Y);
+        v_left.setRotation(-angle); 
+        v_left.setFillColor(Color::Green);
+        window.draw(v_left);
+
+        // Права нога
+        RectangleShape v_right(Vector2f(thickness, letter_height));
+        v_right.setOrigin(thickness / 2.0f, letter_height);
+        v_right.setPosition(v_center_X, v_center_Y);
+        v_right.setRotation(angle); 
+        v_right.setFillColor(Color::Green);
+        window.draw(v_right);
+
+        window.display();
+    }
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+#include <SFML/Graphics.hpp>
+#include <cmath>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <string>
+
+using namespace sf;
+using namespace std;
+
+// Структура для координат Luv
+struct Luv {
+    float L, u, v;
+};
+
+// Формула 1: Конвертація RGB (0-1) в Luv
+Luv RGBtoLuv(float R, float G, float B) {
+    Luv luv;
+    luv.L = 0.299f * R + 0.587f * G + 0.114f * B;
+    luv.u = -0.14713f * R - 0.2886f * G + 0.436f * B;
+    luv.v = 0.615f * R - 0.51499f * G - 0.10001f * B;
+    return luv;
+}
+
+// Формула 2: Розрахунок відстані D
+float CalculateDistance(const Luv& luv1, const Luv& luv2) {
+    float dL = luv1.L - luv2.L;
+    float du = luv1.u - luv2.u;
+    float dv = luv1.v - luv2.v;
+    return std::sqrt(dL * dL + du * du + dv * dv);
+}
+
+int main() {
+    RenderWindow window(VideoMode(500, 300), "Lab 3: Color Models - Variant 4");
+
+    // --- Варіант 4: Розраховані RGB (нормалізовані [0, 1]) ---
+    
+    float R1_norm = 0.8392f; 
+    float G1_norm = 0.5846f;
+    float B1_norm = 0.0f;
+    Color color1_sfml(static_cast<Uint8>(R1_norm * 255), 
+                      static_cast<Uint8>(G1_norm * 255), 
+                      static_cast<Uint8>(B1_norm * 255));
+
+    float R2_norm = 0.0616f; 
+    float G2_norm = 1.0f;
+    float B2_norm = 0.8422f;
+    Color color2_sfml(static_cast<Uint8>(R2_norm * 255), 
+                      static_cast<Uint8>(G2_norm * 255), 
+                      static_cast<Uint8>(B2_norm * 255));
+    
+    
+    Luv luv1 = RGBtoLuv(R1_norm, G1_norm, B1_norm);
+    Luv luv2 = RGBtoLuv(R2_norm, G2_norm, B2_norm);
+    
+    float distance_D = CalculateDistance(luv1, luv2);
+    
+    // --- Візуалізація кольорів ---
+    RectangleShape rect1(Vector2f(150, 150));
+    rect1.setPosition(50, 30);
+    rect1.setFillColor(color1_sfml);
+
+    RectangleShape rect2(Vector2f(150, 150));
+    rect2.setPosition(280, 30);
+    rect2.setFillColor(color2_sfml);
+    
+    // --- Візуалізація тексту D ---
+    Font font;
+    // !!! Не забудьте вказати коректний шлях до шрифту (наприклад, "arial.ttf") !!!
+    if (!font.loadFromFile("arial.ttf")) {
+        
+    }
+
+    stringstream ss;
+    ss << fixed << setprecision(3) << distance_D;
+    string result_str = "Distance D (Luv) = " + ss.str();
+    
+    Text text(result_str, font, 24);
+    text.setPosition(50, 220); 
+    text.setFillColor(Color::Black);
+    
+    // Головний цикл
+    while (window.isOpen()) {
+        Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == Event::Closed)
+                window.close();
+        }
+
+        window.clear(Color::White);
+
+        window.draw(rect1);
+        window.draw(rect2);
+        window.draw(text); // Виведення відстані D
+
+        window.display();
+    }
+
+    return 0;
+}
